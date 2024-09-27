@@ -8,6 +8,7 @@ public class AdoreBeApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AdoreBeApplication.class, args);
+        System.out.println("Hello World");
     }
 
 }
