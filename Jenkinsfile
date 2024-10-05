@@ -136,7 +136,7 @@ pipeline {
             }
         }
 
-        // 추가된 배포 스테이지
+        // 배포 스테이지
         stage('Deploy to Server') {
             steps {
                 script {
