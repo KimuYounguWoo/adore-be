@@ -6,7 +6,33 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/ob98x/adore-be',
-                    credentialsId: 'github-2'
+                    credentialsId: 'adore_github'
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                sh './gradlew clean build'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'adore_jenkins', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t dyw1014/adore-be .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker push dyw1014/adore-be'
             }
         }
     }
