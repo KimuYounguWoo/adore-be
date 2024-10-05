@@ -10,6 +10,12 @@ pipeline {
             }
         }
 
+        stage('Set Gradle Permissions') {
+            steps {
+                sh 'chmod +x gradlew'
+            }
+        }
+
         stage('Build Project') {
             steps {
                 sh './gradlew clean build'
