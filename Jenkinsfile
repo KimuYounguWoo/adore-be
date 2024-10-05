@@ -1,5 +1,11 @@
 pipeline {
-    agent any
+    agent {
+            docker {
+                image 'docker:latest'  // DinD 이미지
+                args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
+        }
+
 
     stages {
         stage('Clone Repository') {
