@@ -6,7 +6,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/ob98x/adore-be',
-                    credentialsId: 'kimyoungwoo_jenkins'
+                    credentialsId: 'github-2'
             }
         }
     }
