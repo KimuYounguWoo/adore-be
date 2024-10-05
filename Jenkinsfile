@@ -42,7 +42,6 @@ pipeline {
                           link: env.BUILD_URL, result: currentBuild.currentResult,
                           title: "Set Gradle Permissions 실패",
                           webhookURL: "$DISCORD"
-
                         throw e
                     }
                 }
@@ -136,22 +135,41 @@ pipeline {
                 }
             }
         }
-    }
 
-    post {
-        success {
-            discordSend description: "알림테스트",
-              footer: "테스트 빌드가 성공했습니다.",
-              link: env.BUILD_URL, result: currentBuild.currentResult,
-              title: "테스트 젠킨스 job",
-              webhookURL: "$DISCORD"
-        }
-        failure {
-            discordSend description: "알림테스트",
-              footer: "테스트 빌드가 실패했습니다.",
-              link: env.BUILD_URL, result: currentBuild.currentResult,
-              title: "테스트 젠킨스 job",
-              webhookURL: "$DISCORD"
+        // 추가된 배포 스테이지
+        stage('Deploy to Server') {
+            steps {
+                script {
+                    try {
+                        sshPublisher(publishers: [
+                            sshPublisherDesc(configName: 'develop', transfers: [
+                                sshTransfer(
+                                    sourceFiles: '**/build/libs/*.jar',
+                                    removePrefix: 'build/libs',
+                                    remoteDirectory: '/home/ubuntu/adore-be',
+                                    execCommand: '''
+                                        docker stop adore-be || true
+                                        docker rm adore-be || true
+                                        docker run -d --name adore-be -p 8080:8080 dyw1014/adore-be
+                                    '''
+                                )
+                            ])
+                        ])
+                        discordSend description: "Deploy to Server 성공",
+                          footer: "서버 배포가 성공했습니다.",
+                          link: env.BUILD_URL, result: currentBuild.currentResult,
+                          title: "Deploy to Server 성공",
+                          webhookURL: "$DISCORD"
+                    } catch (Exception e) {
+                        discordSend description: "Deploy to Server 실패",
+                          footer: "서버 배포에 실패했습니다.",
+                          link: env.BUILD_URL, result: currentBuild.currentResult,
+                          title: "Deploy to Server 실패",
+                          webhookURL: "$DISCORD"
+                        throw e
+                    }
+                }
+            }
         }
     }
 }
