@@ -26,21 +26,33 @@ pipeline {
             }
         }
 
-        stage('Set Gradle Permissions') {
+        // 각 서비스 빌드
+        stage('Build Services') {
             steps {
                 script {
                     try {
-                        sh 'chmod +x gradlew'
-                        discordSend description: "Set Gradle Permissions 성공",
-                          footer: "Gradle 권한 설정이 성공했습니다.",
+                        dir('adore-be-eureka') {
+                            sh './gradlew clean build'
+                        }
+                        dir('adore-be-gateway') {
+                            sh './gradlew clean build'
+                        }
+                        dir('adore-be-first') {
+                            sh './gradlew clean build'
+                        }
+                        dir('adore-be-second') {
+                            sh './gradlew clean build'
+                        }
+                        discordSend description: "Build 성공",
+                          footer: "모든 서비스 빌드 성공",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Set Gradle Permissions 성공",
+                          title: "Build 성공",
                           webhookURL: "$DISCORD"
                     } catch (Exception e) {
-                        discordSend description: "Set Gradle Permissions 실패",
-                          footer: "Gradle 권한 설정에 실패했습니다.",
+                        discordSend description: "Build 실패",
+                          footer: "서비스 빌드 실패",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Set Gradle Permissions 실패",
+                          title: "Build 실패",
                           webhookURL: "$DISCORD"
                         throw e
                     }
@@ -48,21 +60,33 @@ pipeline {
             }
         }
 
-        stage('Build Project') {
+        // 각 서비스 Docker 이미지 빌드
+        stage('Build Docker Images') {
             steps {
                 script {
                     try {
-                        sh './gradlew clean build'
-                        discordSend description: "Build Project 성공",
-                          footer: "프로젝트 빌드가 성공했습니다.",
+                        dir('adore-be-eureka') {
+                            sh 'docker build -t dyw1014/adore-be-eureka-service .'
+                        }
+                        dir('adore-be-gateway') {
+                            sh 'docker build -t dyw1014/adore-be-gateway-service .'
+                        }
+                        dir('adore-be-first') {
+                            sh 'docker build -t dyw1014/adore-be-first-service .'
+                        }
+                        dir('adore-be-second') {
+                            sh 'docker build -t dyw1014/adore-be-second-service .'
+                        }
+                        discordSend description: "Docker Build 성공",
+                          footer: "모든 Docker 이미지 빌드 성공",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build Project 성공",
-                           webhookURL: "$DISCORD"
+                          title: "Docker Build 성공",
+                          webhookURL: "$DISCORD"
                     } catch (Exception e) {
-                        discordSend description: "Build Project 실패",
-                          footer: "프로젝트 빌드에 실패했습니다.",
+                        discordSend description: "Docker Build 실패",
+                          footer: "Docker 이미지 빌드 실패",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build Project 실패",
+                          title: "Docker Build 실패",
                           webhookURL: "$DISCORD"
                         throw e
                     }
@@ -70,65 +94,25 @@ pipeline {
             }
         }
 
-        stage('Docker Login') {
+        // Docker 이미지 푸시
+        stage('Push Docker Images') {
             steps {
                 script {
                     try {
-                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                        discordSend description: "Docker Login 성공",
-                          footer: "Docker 로그인에 성공했습니다.",
+                        sh 'docker push dyw1014/adore-be-eureka-service'
+                        sh 'docker push dyw1014/adore-be-gateway-service'
+                        sh 'docker push dyw1014/adore-be-first-service'
+                        sh 'docker push dyw1014/adore-be-second-service'
+                        discordSend description: "Docker Push 성공",
+                          footer: "모든 Docker 이미지 푸시 성공",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Login 성공",
+                          title: "Docker Push 성공",
                           webhookURL: "$DISCORD"
                     } catch (Exception e) {
-                        discordSend description: "Docker Login 실패",
-                          footer: "Docker 로그인에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Login 실패",
-                          webhookURL: "$DISCORD"
-                        throw e
-                    }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    try {
-                        sh 'docker build -t dyw1014/adore-be .'
-                        discordSend description: "Build Docker Image 성공",
-                          footer: "Docker 이미지 빌드가 성공했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build Docker Image 성공",
-                          webhookURL: "$DISCORD"
-                    } catch (Exception e) {
-                        discordSend description: "Build Docker Image 실패",
-                          footer: "Docker 이미지 빌드에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build Docker Image 실패",
-                          webhookURL: "$DISCORD"
-                        throw e
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    try {
-                        sh 'docker push dyw1014/adore-be'
-                        discordSend description: "Push Docker Image 성공",
-                          footer: "Docker 이미지 푸시가 성공했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Push Docker Image 성공",
-                          webhookURL: "$DISCORD"
-                    } catch (Exception e) {
-                        discordSend description: "Push Docker Image 실패",
+                        discordSend description: "Docker Push 실패",
                           footer: "Docker 이미지 푸시에 실패했습니다.",
                           link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Push Docker Image 실패",
+                          title: "Docker Push 실패",
                           webhookURL: "$DISCORD"
                         throw e
                     }
@@ -136,40 +120,58 @@ pipeline {
             }
         }
 
-        // 배포 스테이지
-        stage('Deploy to Server') {
+        // Blue-Green 배포
+        stage('Blue-Green Deployment') {
             steps {
                 script {
                     try {
-                        sshPublisher(publishers: [
-                            sshPublisherDesc(configName: 'develop', transfers: [
-                                sshTransfer(
-                                    sourceFiles: '**/build/libs/*.jar',
-                                    removePrefix: 'build/libs',
-                                    remoteDirectory: '/home/ubuntu/adore-be',
-                                    execCommand: '''
-                                        docker stop adore-be || true
-                                        docker rm adore-be || true
-                                        docker run -d --name adore-be -p 8080:8080 dyw1014/adore-be
-                                    '''
-                                )
-                            ])
-                        ])
-                        discordSend description: "Deploy to Server 성공",
-                          footer: "서버 배포가 성공했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Deploy to Server 성공",
-                          webhookURL: "$DISCORD"
+                        // 현재 활성화된 환경을 확인
+                        def activeEnvironment = sh(script: 'docker ps --filter "name=gateway-service-blue" --format "{{.Names}}"', returnStdout: true).trim() ? 'blue' : 'green'
+                        def newEnvironment = activeEnvironment == 'blue' ? 'green' : 'blue'
+
+                        // 새로운 환경 배포
+                        sh '''
+                        docker-compose up -d gateway-service-${newEnvironment} first-service-${newEnvironment} second-service-${newEnvironment}
+                        '''
+
+                        // 트래픽 전환
+                        sh '''
+                        if [ "$activeEnvironment" == "blue" ]; then
+                            docker-compose stop gateway-service-blue
+                            docker-compose stop first-service-blue
+                            docker-compose stop second-service-blue
+                        else
+                            docker-compose stop gateway-service-green
+                            docker-compose stop first-service-green
+                            docker-compose stop second-service-green
+                        fi
+                        '''
+
+                        discordSend description: "${newEnvironment} 환경 배포 성공",
+                            footer: "${newEnvironment} 환경 배포 성공",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "${newEnvironment} 환경 배포 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
-                        discordSend description: "Deploy to Server 실패",
-                          footer: "서버 배포에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Deploy to Server 실패",
-                          webhookURL: "$DISCORD"
+                        discordSend description: "${newEnvironment} 환경 배포 실패",
+                            footer: "${newEnvironment} 환경 배포 실패",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "${newEnvironment} 환경 배포 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
             }
+        }
+    }
+
+    post {
+        failure {
+            discordSend description: "빌드 실패",
+              footer: "CI/CD 파이프라인 실패",
+              link: env.BUILD_URL, result: currentBuild.currentResult,
+              title: "빌드 실패",
+              webhookURL: "$DISCORD"
         }
     }
 }

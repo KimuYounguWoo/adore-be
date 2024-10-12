@@ -1,0 +1,22 @@
+server:
+  port: 8000
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-service:8761/eureka
+spring:
+  application:
+    name: adore-be-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: ADORE-BE-FIRST
+          uri: lb://ADORE-BE-FIRST
+          predicates:
+            - Path=/first-service/**
+        - id: ADORE-BE-SECOND
+          uri: lb://ADORE-BE-SECOND
+          predicates:
+            - Path=/second-service/**
