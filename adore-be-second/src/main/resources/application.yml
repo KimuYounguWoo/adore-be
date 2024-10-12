@@ -1,5 +1,6 @@
 server:
   port: 8082
+spring:
   application:
     name: adore-be-second
 eureka:
@@ -7,6 +8,6 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     service-url:
-      defaultZone: http://eureka-service:8761/eureka
+      defaultZone: http://eureka-service:8761/eureka/
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

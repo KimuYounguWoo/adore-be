@@ -3,7 +3,7 @@ services:
   # Eureka 서비스
   eureka-service:
     container_name: eureka-service
-    image: dyw1014/adore-be-eureka:latest
+    image: dyw1014/adore-be-eureka-service:latest
     ports:
       - "8761:8761"  # Eureka 고정 포트
     networks:
@@ -12,9 +12,9 @@ services:
   # Gateway 서비스 (블루 환경)
   gateway-service-blue:
     container_name: gateway-service-blue
-    image: dyw1014/adore-be-gateway:latest
+    image: dyw1014/adore-be-gateway-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     ports:
       - "8000:8000"  # Gateway 고정 포트
     depends_on:
@@ -25,9 +25,9 @@ services:
   # Gateway 서비스 (그린 환경)
   gateway-service-green:
     container_name: gateway-service-green
-    image: dyw1014/adore-be-gateway:latest
+    image: dyw1014/adore-be-gateway-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     ports:
       - "8001:8000"  # Gateway 고정 포트 (다른 포트 사용)
     depends_on:
@@ -40,7 +40,7 @@ services:
     container_name: first-service-blue
     image: dyw1014/adore-be-first-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     depends_on:
       - eureka-service
     networks:
@@ -53,7 +53,7 @@ services:
     container_name: first-service-green
     image: dyw1014/adore-be-first-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     depends_on:
       - eureka-service
     networks:
@@ -66,7 +66,7 @@ services:
     container_name: second-service-blue
     image: dyw1014/adore-be-second-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     depends_on:
       - eureka-service
     networks:
@@ -79,7 +79,7 @@ services:
     container_name: second-service-green
     image: dyw1014/adore-be-second-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
     depends_on:
       - eureka-service
     networks:

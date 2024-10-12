@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/first-service")
+@RequestMapping("/first")
 @Slf4j
 public class FirstController {
     Environment env;
@@ -23,16 +23,4 @@ public class FirstController {
         return "Welcome First Service";
     }
 
-    @GetMapping("/message")
-    public String message(@RequestHeader("first-request") String header){
-        log.info(header);
-        return "Hello First Service";
-    }
-
-    @GetMapping("/check")
-    public String check(HttpServletRequest request){
-        // 포트를 가져오는 방법 두 가지
-        log.info("Server port={}", request.getServerPort());
-        return String.format("Check First Service on PORT %s", env.getProperty("local.server.port"));
-    }
 }
