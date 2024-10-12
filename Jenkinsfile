@@ -144,6 +144,9 @@ pipeline {
                                             new_environment="blue"
                                         fi
 
+                                        # 새 이미지 받기
+                                        docker-compose -f /home/ubuntu/adore-be/docker-compose.yml pull
+
                                         # 새로운 환경의 서비스를 배포
                                         docker-compose -f /home/ubuntu/adore-be/docker-compose.yml up -d \
                                             gateway-service-${new_environment} \

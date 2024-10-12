@@ -13,10 +13,10 @@ spring:
     gateway:
       routes:
         - id: ADORE-BE-FIRST
-          uri: lb://ADORE-BE-FIRST
+          uri: lb://adore-be-first
           predicates:
-            - Path=/first-service/**
+            - Path=/first/**
         - id: ADORE-BE-SECOND
-          uri: lb://ADORE-BE-SECOND
+          uri: lb://adore-be-second
           predicates:
-            - Path=/second-service/**
+            - Path=/second/**
