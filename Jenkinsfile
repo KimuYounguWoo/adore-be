@@ -26,11 +26,11 @@ pipeline {
             }
         }
 
-        // 각 서비스 빌드
         stage('Build Services') {
             steps {
                 script {
                     try {
+                        // 각각의 서비스 디렉토리에서 빌드
                         dir('adore-be-eureka') {
                             sh 'chmod +x gradlew'
                             sh './gradlew clean build'
@@ -64,11 +64,11 @@ pipeline {
             }
         }
 
-        // 각 서비스 Docker 이미지 빌드
         stage('Build Docker Images') {
             steps {
                 script {
                     try {
+                        // Docker 이미지 빌드
                         dir('adore-be-eureka') {
                             sh 'docker build -t dyw1014/adore-be-eureka-service .'
                         }
@@ -98,11 +98,11 @@ pipeline {
             }
         }
 
-        // Docker 이미지 푸시
         stage('Push Docker Images') {
             steps {
                 script {
                     try {
+                        // Docker 이미지 푸시
                         sh 'docker push dyw1014/adore-be-eureka-service'
                         sh 'docker push dyw1014/adore-be-gateway-service'
                         sh 'docker push dyw1014/adore-be-first-service'
@@ -124,49 +124,64 @@ pipeline {
             }
         }
 
-//         // Blue-Green 배포
-//         stage('Blue-Green Deployment') {
-//             steps {
-//                 script {
-//                     try {
-//                         // 현재 활성화된 환경을 확인
-//                         def activeEnvironment = sh(script: 'docker ps --filter "name=gateway-service-blue" --format "{{.Names}}"', returnStdout: true).trim() ? 'blue' : 'green'
-//                         def newEnvironment = activeEnvironment == 'blue' ? 'green' : 'blue'
-//
-//                         // 새로운 환경 배포
-//                         sh '''
-//                         docker-compose up -d gateway-service-${newEnvironment} first-service-${newEnvironment} second-service-${newEnvironment}
-//                         '''
-//
-//                         // 트래픽 전환
-//                         sh '''
-//                         if [ "$activeEnvironment" == "blue" ]; then
-//                             docker-compose stop gateway-service-blue
-//                             docker-compose stop first-service-blue
-//                             docker-compose stop second-service-blue
-//                         else
-//                             docker-compose stop gateway-service-green
-//                             docker-compose stop first-service-green
-//                             docker-compose stop second-service-green
-//                         fi
-//                         '''
-//
-//                         discordSend description: "${newEnvironment} 환경 배포 성공",
-//                             footer: "${newEnvironment} 환경 배포 성공",
-//                             link: env.BUILD_URL, result: currentBuild.currentResult,
-//                             title: "${newEnvironment} 환경 배포 성공",
-//                             webhookURL: "$DISCORD"
-//                     } catch (Exception e) {
-//                         discordSend description: "${newEnvironment} 환경 배포 실패",
-//                             footer: "${newEnvironment} 환경 배포 실패",
-//                             link: env.BUILD_URL, result: currentBuild.currentResult,
-//                             title: "${newEnvironment} 환경 배포 실패",
-//                             webhookURL: "$DISCORD"
-//                         throw e
-//                     }
-//                 }
-//             }
-//         }
+        // 배포 스테이지
+        stage('Deploy to Server') {
+            steps {
+                script {
+                    try {
+                        sshPublisher(publishers: [
+                            sshPublisherDesc(configName: 'develop', transfers: [
+                                sshTransfer(
+                                    sourceFiles: '**/docker-compose.yml',  // docker-compose.yml 파일 전송
+                                    remoteDirectory: '/home/ubuntu/adore-be',  // 서버의 디렉토리 경로
+                                    execCommand: '''
+                                        # 현재 활성화된 환경을 확인
+                                        active_environment=$(docker ps --filter "name=gateway-service-blue" --format "{{.Names}}" | wc -l)
+
+                                        if [ $active_environment -gt 0 ]; then
+                                            new_environment="green"
+                                        else
+                                            new_environment="blue"
+                                        fi
+
+                                        # 새로운 환경의 서비스를 배포
+                                        docker-compose -f /home/ubuntu/adore-be/docker-compose.yml up -d \
+                                            gateway-service-${new_environment} \
+                                            first-service-${new_environment} \
+                                            second-service-${new_environment}
+
+                                        # 트래픽 전환을 위해 기존 환경의 서비스 중지
+                                        if [ "$new_environment" = "green" ]; then
+                                            docker-compose -f /home/ubuntu/adore-be/docker-compose.yml stop \
+                                                gateway-service-blue \
+                                                first-service-blue \
+                                                second-service-blue
+                                        else
+                                            docker-compose -f /home/ubuntu/adore-be/docker-compose.yml stop \
+                                                gateway-service-green \
+                                                first-service-green \
+                                                second-service-green
+                                        fi
+                                    '''
+                                )
+                            ])
+                        ])
+                        discordSend description: "Deploy to Server 성공",
+                          footer: "서버 배포가 성공했습니다.",
+                          link: env.BUILD_URL, result: currentBuild.currentResult,
+                          title: "Deploy to Server 성공",
+                          webhookURL: "$DISCORD"
+                    } catch (Exception e) {
+                        discordSend description: "Deploy to Server 실패",
+                          footer: "서버 배포에 실패했습니다.",
+                          link: env.BUILD_URL, result: currentBuild.currentResult,
+                          title: "Deploy to Server 실패",
+                          webhookURL: "$DISCORD"
+                        throw e
+                    }
+                }
+            }
+        }
     }
 
     post {
