@@ -132,15 +132,18 @@ pipeline {
                         sshPublisher(publishers: [
                             sshPublisherDesc(configName: 'develop', transfers: [
                                 sshTransfer(
-                                    sourceFiles: '**/docker-compose.yml',  // docker-compose.yml 파일 전송
-                                    remoteDirectory: '/home/ubuntu/adore-be',  // 서버의 디렉토리 경로
                                     execCommand: '''
+                                        # 프로젝트 디렉토리로 이동
+                                        cd /home/ubuntu/adore-be
 
-                                        # 새 이미지 받기
-                                        docker-compose -f /home/ubuntu/adore-be/docker-compose.yml pull
+                                        # Git 저장소에서 최신 코드 가져오기
+                                        git pull origin main
 
-                                        # 새로운 환경의 서비스를 배포
-                                        docker-compose -f /home/ubuntu/adore-be/docker-compose.yml up -d \
+                                        # 최신 이미지 가져오기
+                                        docker-compose pull
+
+                                        # 새로운 서비스 배포
+                                        docker-compose up -d \
                                             community-service \
                                             user-service \
                                             gateway-service
@@ -148,6 +151,10 @@ pipeline {
                                 )
                             ])
                         ])
+                    } catch (Exception e) {
+                        println("배포 과정에서 문제가 발생했습니다: " + e.message)
+                        currentBuild.result = 'FAILURE'
+                    }
                         discordSend description: "Deploy to Server 성공",
                           footer: "서버 배포가 성공했습니다.",
                           link: env.BUILD_URL, result: currentBuild.currentResult,

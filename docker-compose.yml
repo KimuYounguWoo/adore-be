@@ -6,7 +6,7 @@ services:
       context: ./discovery-service
       dockerfile: Dockerfile
     container_name: discovery-service
-    image: dyw1014/adore-discovery-service:latest
+    image: dyw1014/adore-be-discovery-service:latest
     ports:
       - "8761:8761"
     networks:
@@ -20,7 +20,7 @@ services:
     container_name: gateway-service
     image: dyw1014/adore-be-gateway-service:latest
     environment:
-      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
     ports:
       - "8000:8000"
     depends_on:
@@ -35,10 +35,9 @@ services:
     container_name: user-service
     image: dyw1014/adore-be-user-service:latest
     environment:
-      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
     depends_on:
       - discovery-service
-      - gateway-service
     networks:
       - msa-network
     ports:
@@ -51,10 +50,9 @@ services:
     container_name: community-service
     image: dyw1014/adore-be-community-service:latest
     environment:
-      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
     depends_on:
       - discovery-service
-      - gateway-service
     networks:
       - msa-network
     ports:
