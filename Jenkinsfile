@@ -8,18 +8,19 @@ pipeline {
                     try {
                         git branch: 'main',
                             url: 'https://github.com/ob98x/adore-be',
-                            credentialsId: 'adore_github'
+                            credentialsId: 'KimYoungWoo'
+
                         discordSend description: "Clone Repository 성공",
-                          footer: "레포지토리 복제가 성공했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Clone Repository 성공",
-                          webhookURL: "$DISCORD"
+                            footer: "레포지토리 복제가 성공했습니다.",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Clone Repository 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
                         discordSend description: "Clone Repository 실패",
-                          footer: "레포지토리 복제에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Clone Repository 실패",
-                          webhookURL: "$DISCORD"
+                            footer: "레포지토리 복제에 실패했습니다.",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Clone Repository 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
@@ -31,33 +32,25 @@ pipeline {
                 script {
                     try {
                         // 각각의 서비스 디렉토리에서 빌드
-                        dir('discovery-service') {
-                            sh 'chmod +x gradlew'
-                            sh './gradlew clean build'
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        services.each { service ->
+                            dir(service) {
+                                sh 'chmod +x gradlew'
+                                sh './gradlew clean build'
+                            }
                         }
-                        dir('gateway-service') {
-                            sh 'chmod +x gradlew'
-                            sh './gradlew clean build'
-                        }
-                        dir('user-service') {
-                            sh 'chmod +x gradlew'
-                            sh './gradlew clean build'
-                        }
-                        dir('community-service') {
-                            sh 'chmod +x gradlew'
-                            sh './gradlew clean build'
-                        }
+
                         discordSend description: "Build 성공",
-                          footer: "모든 서비스 빌드 성공",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build 성공",
-                          webhookURL: "$DISCORD"
+                            footer: "모든 서비스 빌드 성공",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Build 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
                         discordSend description: "Build 실패",
-                          footer: "서비스 빌드 실패",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Build 실패",
-                          webhookURL: "$DISCORD"
+                            footer: "서비스 빌드 실패",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Build 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
@@ -69,29 +62,24 @@ pipeline {
                 script {
                     try {
                         // Docker 이미지 빌드
-                        dir('discovery-service') {
-                            sh 'docker build --no-cache -t dyw1014/adore-be-discovery-service .'
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        services.each { service ->
+                            dir(service) {
+                                sh "docker build --no-cache -t dyw1014/adore-be-${service} ."
+                            }
                         }
-                        dir('gateway-service') {
-                            sh 'docker build --no-cache -t dyw1014/adore-be-gateway-service .'
-                        }
-                        dir('user-service') {
-                            sh 'docker build --no-cache -t dyw1014/adore-be-user-service .'
-                        }
-                        dir('community-service') {
-                            sh 'docker build --no-cache -t dyw1014/adore-be-community-service .'
-                        }
+
                         discordSend description: "Docker Build 성공",
-                          footer: "모든 Docker 이미지 빌드 성공",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Build 성공",
-                          webhookURL: "$DISCORD"
+                            footer: "모든 Docker 이미지 빌드 성공",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Docker Build 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
                         discordSend description: "Docker Build 실패",
-                          footer: "Docker 이미지 빌드 실패",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Build 실패",
-                          webhookURL: "$DISCORD"
+                            footer: "Docker 이미지 빌드 실패",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Docker Build 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
@@ -103,28 +91,28 @@ pipeline {
                 script {
                     try {
                         // Docker 이미지 푸시
-                        sh 'docker push dyw1014/adore-be-discovery-service'
-                        sh 'docker push dyw1014/adore-be-gateway-service'
-                        sh 'docker push dyw1014/adore-be-user-service'
-                        sh 'docker push dyw1014/adore-be-community-service'
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        services.each { service ->
+                            sh "docker push dyw1014/adore-be-${service}"
+                        }
+
                         discordSend description: "Docker Push 성공",
-                          footer: "모든 Docker 이미지 푸시 성공",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Push 성공",
-                          webhookURL: "$DISCORD"
+                            footer: "모든 Docker 이미지 푸시 성공",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Docker Push 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
                         discordSend description: "Docker Push 실패",
-                          footer: "Docker 이미지 푸시에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Docker Push 실패",
-                          webhookURL: "$DISCORD"
+                            footer: "Docker 이미지 푸시에 실패했습니다.",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Docker Push 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
             }
         }
 
-        // 배포 스테이지
         stage('Deploy to Server') {
             steps {
                 script {
@@ -151,21 +139,18 @@ pipeline {
                                 )
                             ])
                         ])
-                    } catch (Exception e) {
-                        println("배포 과정에서 문제가 발생했습니다: " + e.message)
-                        currentBuild.result = 'FAILURE'
-                    }
+
                         discordSend description: "Deploy to Server 성공",
-                          footer: "서버 배포가 성공했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Deploy to Server 성공",
-                          webhookURL: "$DISCORD"
+                            footer: "서버 배포가 성공했습니다.",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Deploy to Server 성공",
+                            webhookURL: "$DISCORD"
                     } catch (Exception e) {
                         discordSend description: "Deploy to Server 실패",
-                          footer: "서버 배포에 실패했습니다.",
-                          link: env.BUILD_URL, result: currentBuild.currentResult,
-                          title: "Deploy to Server 실패",
-                          webhookURL: "$DISCORD"
+                            footer: "서버 배포에 실패했습니다.",
+                            link: env.BUILD_URL, result: currentBuild.currentResult,
+                            title: "Deploy to Server 실패",
+                            webhookURL: "$DISCORD"
                         throw e
                     }
                 }
@@ -176,10 +161,10 @@ pipeline {
     post {
         failure {
             discordSend description: "빌드 실패",
-              footer: "CI/CD 파이프라인 실패",
-              link: env.BUILD_URL, result: currentBuild.currentResult,
-              title: "빌드 실패",
-              webhookURL: "$DISCORD"
+                footer: "CI/CD 파이프라인 실패",
+                link: env.BUILD_URL, result: currentBuild.currentResult,
+                title: "빌드 실패",
+                webhookURL: "$DISCORD"
         }
     }
 }
