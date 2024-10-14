@@ -1,90 +1,64 @@
+# /docker-compose.yml
 services:
-  # Eureka 서비스
-  eureka-service:
-    container_name: eureka-service
-    image: dyw1014/adore-be-eureka-service:latest
+  # Eureka
+  discovery-service:
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    container_name: discovery-service
+    image: dyw1014/adore-discovery-service:latest
     ports:
-      - "8761:8761"  # Eureka 고정 포트
+      - "8761:8761"
     networks:
       - msa-network
 
-  # Gateway 서비스 (블루 환경)
-  gateway-service-blue:
-    container_name: gateway-service-blue
+  # Gateway
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
     image: dyw1014/adore-be-gateway-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
+      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     ports:
-      - "8000:8000"  # Gateway 고정 포트
+      - "8000:8000"
     depends_on:
-      - eureka-service
+      - discovery-service
     networks:
       - msa-network
 
-  # Gateway 서비스 (그린 환경)
-  gateway-service-green:
-    container_name: gateway-service-green
-    image: dyw1014/adore-be-gateway-service:latest
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    image: dyw1014/adore-be-user-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
-    ports:
-      - "8001:8000"  # Gateway 고정 포트 (다른 포트 사용)
+      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
-      - eureka-service
+      - discovery-service
+      - gateway-service
     networks:
       - msa-network
+    ports:
+      - "8081:8081"
 
-  # First 서비스 (블루 환경)
-  first-service-blue:
-    container_name: first-service-blue
-    image: dyw1014/adore-be-first-service:latest
+  community-service:
+    build:
+      context: ./community-service
+      dockerfile: Dockerfile
+    container_name: community-service
+    image: dyw1014/adore-be-community-service:latest
     environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
+      SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
-      - eureka-service
+      - discovery-service
+      - gateway-service
     networks:
       - msa-network
     ports:
-      - "8081:8081"  # 고정 포트 설정
-
-  # First 서비스 (그린 환경)
-  first-service-green:
-    container_name: first-service-green
-    image: dyw1014/adore-be-first-service:latest
-    environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
-    depends_on:
-      - eureka-service
-    networks:
-      - msa-network
-    ports:
-      - "8082:8081"  # 고정 포트 설정 (다른 포트 사용)
-
-  # Second 서비스 (블루 환경)
-  second-service-blue:
-    container_name: second-service-blue
-    image: dyw1014/adore-be-second-service:latest
-    environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
-    depends_on:
-      - eureka-service
-    networks:
-      - msa-network
-    ports:
-      - "8083:8082"  # 고정 포트 설정
-
-  # Second 서비스 (그린 환경)
-  second-service-green:
-    container_name: second-service-green
-    image: dyw1014/adore-be-second-service:latest
-    environment:
-      - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka/
-    depends_on:
-      - eureka-service
-    networks:
-      - msa-network
-    ports:
-      - "8084:8082"  # 고정 포트 설정
+      - "8082:8082"
 
 networks:
   msa-network:
