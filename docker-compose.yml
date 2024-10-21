@@ -12,26 +12,18 @@ services:
     networks:
       - msa-network
 
-  vault-service:
+  config-service:
     build:
-      context: ./vault-service
+      context: ./config-service
       dockerfile: Dockerfile
-    container_name: vault-service
-    image: dyw1014/adore-be-vault-service:latest
+    container_name: config-service
+    image: dyw1014/adore-be-config-service:latest
     environment:
-      - SKIP_CHOWN=true
-    cap_add:
-      - IPC_LOCK
+      - GIT_PW=${GIT_PW}
     ports:
-      - "8200:8200"
-    volumes:
-      - ./vault:/vault          # /vault 경로를 호스트의 ./vault와 연결
-      - ./file:/file            # /file 경로를 호스트의 ./file과 연결
-      - ./logs:/logs            # /logs 경로를 호스트의 ./logs와 연결
+      - "8888:8888"
     networks:
       - msa-network
-
-
 
   # Gateway
   gateway-service:
@@ -81,16 +73,6 @@ services:
       - msa-network
     ports:
       - "8082:8082"
-  config-service:
-    build:
-      context: ./config-service
-      dockerfile: Dockerfile
-    container_name: config-service
-    image: dyw1014/adore-be-config-service:latest
-    ports:
-      - "8888:8888"
-    networks:
-      - msa-network
 
 networks:
   msa-network:
