@@ -134,7 +134,8 @@ pipeline {
                                         docker-compose up -d \
                                             community-service \
                                             user-service \
-                                            gateway-service
+                                            gateway-service \
+                                            config-service
                                     '''
                                 )
                             ])
