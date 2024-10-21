@@ -12,6 +12,22 @@ services:
     networks:
       - msa-network
 
+  vault-service:
+    build:
+      context: ./vault-service
+      dockerfile: Dockerfile
+    container_name: vault-service
+    image: dyw1014/adore-be-vault-service:latest
+    environment:
+      - SKIP_CHOWN=true
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    networks:
+      - msa-network
+
+
   # Gateway
   gateway-service:
     build:
@@ -21,6 +37,7 @@ services:
     image: dyw1014/adore-be-gateway-service:latest
     environment:
       - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
     ports:
       - "8000:8000"
     depends_on:
@@ -36,6 +53,7 @@ services:
     image: dyw1014/adore-be-user-service:latest
     environment:
       - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
     depends_on:
       - discovery-service
     networks:
@@ -51,12 +69,23 @@ services:
     image: dyw1014/adore-be-community-service:latest
     environment:
       - DISCOVERY_SERVICE=http://discovery-service:8761/eureka
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
     depends_on:
       - discovery-service
     networks:
       - msa-network
     ports:
       - "8082:8082"
+  config-service:
+    build:
+      context: ./config-service
+      dockerfile: Dockerfile
+    container_name: config-service
+    image: dyw1014/adore-be-config-service:latest
+    ports:
+      - "8888:8888"
+    networks:
+      - msa-network
 
 networks:
   msa-network:

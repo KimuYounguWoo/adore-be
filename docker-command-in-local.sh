@@ -20,6 +20,14 @@ cd ./discovery-service
 docker build --no-cache -t dyw1014/adore-be-discovery-service:latest .
 cd ..
 
+cd ./config-service
+./gradlew clean build
+docker build --no-cache -t dyw1014/adore-be-config-service:latest .
+cd ..
+
+cd ./vault
+docker build --no-cache -t dyw1014/adore-be-vault-service:latest .
+
 # Push docker image to docker hub (needed docker login)
 
 docker push dyw1014/adore-be-community-service

@@ -32,7 +32,7 @@ pipeline {
                 script {
                     try {
                         // 각각의 서비스 디렉토리에서 빌드
-                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service', 'config-service']
                         services.each { service ->
                             dir(service) {
                                 sh 'chmod +x gradlew'
@@ -62,7 +62,7 @@ pipeline {
                 script {
                     try {
                         // Docker 이미지 빌드
-                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service', 'config-service']
                         services.each { service ->
                             dir(service) {
                                 sh "docker build --no-cache -t dyw1014/adore-be-${service} ."
@@ -91,7 +91,7 @@ pipeline {
                 script {
                     try {
                         // Docker 이미지 푸시
-                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service']
+                        def services = ['discovery-service', 'gateway-service', 'user-service', 'community-service', 'config-service']
                         services.each { service ->
                             sh "docker push dyw1014/adore-be-${service}"
                         }

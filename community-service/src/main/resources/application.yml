@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: community-service
+  config:
+    import: optional:configserver:http://config-service:8888
 eureka:
   client:
     fetch-registry: true

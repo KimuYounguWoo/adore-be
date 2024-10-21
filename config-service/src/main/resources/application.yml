@@ -1,0 +1,28 @@
+server:
+  port: 8888
+logging:
+  level:
+    org.springframework.cloud: DEBUG
+spring:
+  application:
+    name: config-service
+  profiles:
+    active: vault, git
+  cloud:
+    config:
+      server:
+        vault:
+          host: vault-service
+          port: 8200
+          scheme: http
+          backend: config-service
+          kvVersion: 2
+          authentication: TOKEN
+          token: ${vault.token}
+          order: 1
+        git:
+          uri: ${vault.github}
+          default-label: main
+          username: ${vault.gitId}
+          password: ${vault.gitPw}
+          order: 2
