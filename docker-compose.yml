@@ -24,8 +24,13 @@ services:
       - IPC_LOCK
     ports:
       - "8200:8200"
+    volumes:
+      - ./vault:/vault          # /vault 경로를 호스트의 ./vault와 연결
+      - ./file:/file            # /file 경로를 호스트의 ./file과 연결
+      - ./logs:/logs            # /logs 경로를 호스트의 ./logs와 연결
     networks:
       - msa-network
+
 
 
   # Gateway
