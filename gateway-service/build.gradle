@@ -35,15 +35,50 @@ ext {
 }
 
 dependencies {
-		implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+
+	// Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6', 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// Spring Cloud
+	implementation "org.springframework.boot:spring-boot-starter-webflux"
+	implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.cloud:spring-cloud-config-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+
+	// Spring Data R2DBC
+	implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"
+	implementation 'io.r2dbc:r2dbc-h2'
+	implementation 'org.mariadb:r2dbc-mariadb'
+	implementation group: 'javax.persistence', name: 'javax.persistence-api', version: '2.2'
+
+	// Web
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

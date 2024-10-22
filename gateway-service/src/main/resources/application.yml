@@ -1,5 +1,9 @@
+jwt:
+  secret: "OlMlKTyB15IFVWJV0eyKlgLZ6XrbfRIOS1J9Q1Q9J1SDASASASASZXQW"
+  access_exp: 259200
+  refresh_exp: 8640000
 server:
-  port: 8000
+  port: 8111
 eureka:
   instance:
     lease-renewal-interval-in-seconds: 5
@@ -9,13 +13,36 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://discovery-service:8761/eureka/
-
+      defaultZone: http://127.0.0.1:8761/eureka/
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
 spring:
+  data:
+    redis:
+      repositories:
+        enabled: true
+      host: localhost
+      port: 6379
+  r2dbc:
+    url: r2dbc:mariadb://localhost:3306/adore
+    username: root
+    password: root
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: dyw1014@gachon.ac.kr
+    password: secr ette xtdo ntto
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
   application:
     name: gateway-service
   config:
-    import: optional:configserver:http://config-service:8888
+    import: optional:configserver:http://127.0.0.1:8888
+    activate:
+      on-profile: local
   cloud:
     gateway:
       routes:
