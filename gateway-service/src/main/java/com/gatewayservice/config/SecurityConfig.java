@@ -1,12 +1,12 @@
 package com.gatewayservice.config;
 
+
 import com.gatewayservice.global.CustomException;
 import com.gatewayservice.global.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -16,6 +16,8 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -34,11 +36,17 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+                .cors(corsSpec -> corsSpec.configurationSource(exchange -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.addAllowedOrigin("*");
+                    config.addAllowedMethod("*");
+                    config.addAllowedHeader("*");
+                    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                    source.registerCorsConfiguration("/**", config);
+                    return config;
+                }))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) //session STATELESS
-                .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
-                        .authenticationEntryPoint((exchange, ex) -> Mono.fromRunnable(() -> exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)))
-                        .accessDeniedHandler((exchange, denied) -> Mono.fromRunnable(() -> exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN))))
                 .authorizeExchange(exchanges -> exchanges
                         .anyExchange().permitAll()
                 )
@@ -50,34 +58,43 @@ public class SecurityConfig {
     }
 
     private AuthenticationWebFilter JwtFilter() {
+        log.info("JwtFilter is called");
         ReactiveAuthenticationManager authenticationManager = Mono::just;
 
         AuthenticationWebFilter authenticationWebFilter
                 = new AuthenticationWebFilter(authenticationManager);
         authenticationWebFilter.setServerAuthenticationConverter(serverAuthenticationConverter());
+        log.info("JwtFilter is called");
+        log.info(authenticationWebFilter.toString());
         return authenticationWebFilter;
     }
 
-    private ServerAuthenticationConverter serverAuthenticationConverter(){
+    private ServerAuthenticationConverter serverAuthenticationConverter() {
         return exchange -> {
             String token = jwtUtil.resolveToken(exchange.getRequest());
+            if (Objects.isNull(token)) {
+                log.info("인증 건너뛰기");
+                return Mono.empty(); // 토큰이 없으면 인증 절차 건너뛰기
+            }
+
             log.info("token: {}", token);
             try {
-                if(!Objects.isNull(token) && jwtUtil.validateToken(token)){
-                    log.info("if is called");
+                if (jwtUtil.validateToken(token)) {
+                    log.info("Token is valid, proceeding with authentication");
                     return Mono.justOrEmpty(jwtUtil.getAuthentication(token));
                 }
             } catch (CustomException e) {
+                log.error("Token validation failed: {}", e.getMessage());
                 throw new CustomException(ResponseCode.INVALID_TOKEN);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Unexpected exception during token validation: {}", e.getMessage(), e);
-                // 일반적인 예외 처리
                 throw new CustomException(ResponseCode.INTERNAL_SERVER_ERROR);
             }
+            log.info("Token validation failed, returning empty");
             return Mono.empty();
         };
     }
+
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

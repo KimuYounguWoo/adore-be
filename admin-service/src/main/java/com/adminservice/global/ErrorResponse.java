@@ -1,4 +1,4 @@
-package com.gatewayservice.global;
+package com.adminservice.global;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

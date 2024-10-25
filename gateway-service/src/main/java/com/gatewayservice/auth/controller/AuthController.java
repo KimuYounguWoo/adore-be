@@ -5,6 +5,7 @@ import com.gatewayservice.auth.service.AuthService;
 import com.gatewayservice.global.ResponseCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,12 @@ public class AuthController {
     public Mono<ResponseEntity<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequestDto) {
         return authService.login(loginRequestDto)
                 .map(ResponseEntity::ok)
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null))); // 로그인 실패 처리
+                .onErrorResume(e -> {
+                    log.error("로그인 실패", e);
+                    log.info(e.getMessage());
+                        return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null));
+                }
+                ); // 로그인 실패 처리
     }
 
     @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복을 체크합니다.")
@@ -96,5 +102,10 @@ public class AuthController {
         return authService.signUp(signUpRequestDto)
                 .map(ResponseEntity::ok)
                 .onErrorReturn(ResponseEntity.status(HttpStatus.CONFLICT).body(null)); // 회원가입 실패 처리
+    }
+
+    @GetMapping("/test")
+    public Mono<ResponseEntity<String>> test() {
+        return Mono.just(ResponseEntity.ok("test"));
     }
 }

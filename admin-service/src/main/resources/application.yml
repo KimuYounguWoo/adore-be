@@ -1,0 +1,39 @@
+server:
+  port: 8083
+springdoc:
+  api-docs:
+    version: openapi_3_1
+    enabled: true
+  enable-spring-security: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/adore
+    username: root
+    password: root
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    password: root
+    username: root
+    uris: 127.0.0.1:9200
+  application:
+    name: admin-service
+  config:
+    import: optional:configserver:http://config-service:8888
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${server.port}

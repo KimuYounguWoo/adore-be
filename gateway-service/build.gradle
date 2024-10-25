@@ -58,7 +58,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.cloud:spring-cloud-config-client'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 
 	// Spring Data R2DBC
 	implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"

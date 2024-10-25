@@ -19,7 +19,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
